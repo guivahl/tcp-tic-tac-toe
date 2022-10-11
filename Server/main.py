@@ -23,10 +23,9 @@ if decodedMessagePlayer1 == "CRIA_JOGO":
     board = Board(str(addrPlayer1[0]) + str(addrPlayer1[1]))
     gameCode = board.code()
     print("Novo jogo criado!")
-    messagePlayer1 = "Jogo criado com sucesso\n Jogador 1 conectado\n Aguardando jogador 2 se conectar"
-    connectionSocketPlayer1.send(messagePlayer1.encode())
     serverSocketPlayer2.listen(1)
     print("Código da partida: " + gameCode)
+    connectionSocketPlayer1.send(("CODIGO_DE_ACESSO:" + gameCode).encode())
     print("Aguardando jogador 2...")
 
     connectionSocketPlayer2, addrPlayer2 = serverSocketPlayer2.accept()
@@ -55,6 +54,13 @@ if decodedMessagePlayer1 == "CRIA_JOGO":
                     if board.status() != "Em andamento":
                         break
                     print(board.toString())
+                connectionSocketPlayer1.send(
+                    (
+                        "JOGADA_CONFIRMADA "
+                        + board.toString()
+                        + "\n\nAguardando jogada do jogador 2..."
+                    ).encode()
+                )
                 connectionSocketPlayer2.send(
                     ("JOGADA_LIBERADA " + board.toString()).encode()
                 )
@@ -69,14 +75,22 @@ if decodedMessagePlayer1 == "CRIA_JOGO":
                         break
                     board.changePlayer()
                     print(board.toString())
+                connectionSocketPlayer2.send(
+                    (
+                        "JOGADA_CONFIRMADA "
+                        + board.toString()
+                        + "\n Aguardando jogada do jogador 1..."
+                    ).encode()
+                )
                 connectionSocketPlayer1.send(
                     ("JOGADA_LIBERADA " + board.toString()).encode()
                 )
 
     connectionSocketPlayer1.send(("ENCERRA_JOGO " + board.gameStatus).encode())
-    connectionSocketPlayer1.send(("ENCERRA_JOGO " + board.gameStatus).encode())
     connectionSocketPlayer2.send(("ENCERRA_JOGO " + board.gameStatus).encode())
     time.sleep(2)
     connectionSocketPlayer1.close()
     connectionSocketPlayer2.close()
-    print("FIM")
+    print(board.toString())
+    print(board.gameStatus)
+    print("Jogo encerrado!")
