@@ -40,7 +40,13 @@ while not decodedMessage.startswith("ENCERRA_JOGO"):
     if decodedMessage.startswith("JOGADA_LIBERADA"):
         os.system("cls" if os.name == "nt" else "clear")
         print(decodedMessage[:45][16:])
-        playPosition = input("\nJogador {} deve jogar: ".format(playerType))
+        playPosition = "0"
+        while (
+            not playPosition.isnumeric()
+            or int(playPosition) < 1
+            or int(playPosition) > 9
+        ):
+            playPosition = input("\nJogador {} deve jogar: ".format(playerType))
         message = "JOGADA:" + playPosition
         encodedMessage = message.encode()
         clientSocket.send(encodedMessage)
